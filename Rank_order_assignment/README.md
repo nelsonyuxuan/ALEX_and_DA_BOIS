@@ -1,4 +1,5 @@
 ## Rank-Order Assignment
+### Authors: Alexandra Cheng, Sai Koukuntla, Nelson Wu
 
 ## Files:
 - **RankOrder_LIP.py** contains the function that implements the Integer Linear Programming method to solve the rank order problem.
@@ -22,3 +23,5 @@ Output Return:
 - **Doctor Capacity**: Doctors may have varying capacities.
 - **Preference Values**: Preferences must be integers, in line with the ILP approach. A patient's maximum preference for any doctor is equal to the total number of doctors, while the minimum is 1.
 
+## References:
+- **Linear Programming (LP) Optimizatino with PuLP**: https://coin-or.github.io/pulp/
