@@ -13,43 +13,49 @@ Output Return:
 - A list of assignments indicating which doctors are to take care of which patients
 
 Assumptions:
-@ 09/04/2023:
-- Doctors don't have preferences for patients (since they are not displaying their preferences)
-- Total capacity exceeds the number of patients
-- Each patient provides a rank for every doctor
-- Ties are allowed
+- Doctor Preferences: Doctors do not have patient preferences, as they are not allowed to express them.
+- Patient Assignment: If the total capacity of doctors exceeds the number of patients, every patient is guaranteed an assignment. Otherwise, some patients may not be assigned.
+- Patient Ranking: Each patient ranks every doctor.
+- Ties: Ties in rankings are permitted.
+- Doctor Capacity: Doctors may have varying capacities.
+- Preference Values: Preferences must be integers, in line with the ILP approach. A patient's maximum preference for any doctor is equal to the total number of doctors, while the minimum is 1.
 
 Summary of the function:
 Consider the problem as the Integer Linear Problem. Define the binary variables x_ij that are equal to 1 when patient i is assigned to doctor j and 0 otherwise. 
 The objective function is to maximize the sum of preferences. The constraints are that each patient is assigned to exactly one doctor and each doctor has a maximum capacity.
 
-Author: @Nelson Wu, @Sai Koukuntla, @Alexandra Cheng 
-'''
+References:
+- Linear Programming (LP) Optimizatino with PuLP: https://coin-or.github.io/pulp/
 
+Author: @Alexandra Cheng, @Sai Koukuntla, @Nelson Wu
+'''
+# Importing packages
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum, PULP_CBC_CMD
 
 def ilp_assignment(preferences, doctor_capacity):
+
+    # Get the number of patients and doctors
     num_patients = len(preferences)
     num_doctors = len(preferences[0])
 
-    # Create the ILP problem
+    # Create the ILP problem. In this case, we want to maximize the sum of preferences.
     model = LpProblem(name="doctor-patient-assignment", sense=LpMaximize)
 
-    # Create variables
+    # Create binary variables for each patient-doctor pair
     x = {}
     for i in range(num_patients):
         for j in range(num_doctors):
             for k in range(doctor_capacity[j]):
                 x[i, j] = LpVariable(name=f"x_{i}_{j}", cat="Binary")
 
-    # Objective function: Maximize the sum of preferences
+    # Objective function: the linear combination of each binary variable and its corresponding preference
     model += lpSum(preferences[i][j] * x[i, j] for i in range(num_patients) for j in range(num_doctors)), "Total_Preference"
 
-    # Constraint: Each patient is assigned to exactly one doctor
+    # Constraint 1: Each patient is assigned to exactly one doctor
     for i in range(num_patients):
         model += lpSum(x[i, j] for j in range(num_doctors)) == 1, f"Patient_{i}"
 
-    # Constraint: Each doctor has a maximum capacity
+    # Constraint 2: Each doctor has a maximum capacity
     for j in range(num_doctors):
         for k in range(doctor_capacity[j]):
             model += lpSum(x[i, j] for i in range(num_patients)) <= doctor_capacity[j], f"Doctor_{j}_{k}"
@@ -66,14 +72,15 @@ def ilp_assignment(preferences, doctor_capacity):
 
     return assignments
 
-# # Test the function
+# Simple test case, used when tuning the data.
+
 # preferences = [
 #     [5, 2, 1],
 #     [4, 3, 1],
-#     [3, 2, 4],
+#     [3, 2, 2],
 #     [1, 5, 2]
 # ]
-# doctor_capacity = 2
+# doctor_capacity = [1,1,1]
 
 # assignments = ilp_assignment(preferences, doctor_capacity)
 # print("Assignments:", assignments)
